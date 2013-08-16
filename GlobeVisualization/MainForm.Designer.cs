@@ -50,6 +50,7 @@ namespace GlobeVisualization
 			this.statusBar1 = new System.Windows.Forms.StatusStrip();
 			this.statusBarXY = new System.Windows.Forms.ToolStripStatusLabel();
 			this.splitter1 = new System.Windows.Forms.Splitter();
+			this.RemoveLayer = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.axGlobeControl1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.axToolbarControl1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.axTOCControl1)).BeginInit();
@@ -95,30 +96,31 @@ namespace GlobeVisualization
 			// tocContextMenu
 			// 
 			this.tocContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.RemoveLayer,
             this.ZoomToLayer,
             this.AttributeTable,
             this.Property});
 			this.tocContextMenu.Name = "tocContextMenu";
-			this.tocContextMenu.Size = new System.Drawing.Size(147, 70);
+			this.tocContextMenu.Size = new System.Drawing.Size(153, 114);
 			// 
 			// ZoomToLayer
 			// 
 			this.ZoomToLayer.Name = "ZoomToLayer";
-			this.ZoomToLayer.Size = new System.Drawing.Size(146, 22);
+			this.ZoomToLayer.Size = new System.Drawing.Size(152, 22);
 			this.ZoomToLayer.Text = "缩放到该图层";
 			this.ZoomToLayer.Click += new System.EventHandler(this.ZoomToLayer_Click);
 			// 
 			// AttributeTable
 			// 
 			this.AttributeTable.Name = "AttributeTable";
-			this.AttributeTable.Size = new System.Drawing.Size(146, 22);
+			this.AttributeTable.Size = new System.Drawing.Size(152, 22);
 			this.AttributeTable.Text = "打开属性表";
 			this.AttributeTable.Click += new System.EventHandler(this.AttributeTable_Click);
 			// 
 			// Property
 			// 
 			this.Property.Name = "Property";
-			this.Property.Size = new System.Drawing.Size(146, 22);
+			this.Property.Size = new System.Drawing.Size(152, 22);
 			this.Property.Text = "属性";
 			this.Property.Click += new System.EventHandler(this.Property_Click);
 			// 
@@ -194,6 +196,13 @@ namespace GlobeVisualization
 			this.splitter1.TabIndex = 6;
 			this.splitter1.TabStop = false;
 			// 
+			// RemoveLayer
+			// 
+			this.RemoveLayer.Name = "RemoveLayer";
+			this.RemoveLayer.Size = new System.Drawing.Size(152, 22);
+			this.RemoveLayer.Text = "移除";
+			this.RemoveLayer.Click += new System.EventHandler(this.RemoveLayer_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -243,6 +252,7 @@ namespace GlobeVisualization
         private System.Windows.Forms.ToolStripMenuItem Property;
         private System.Windows.Forms.ToolStripMenuItem AttributeTable;
         private System.Windows.Forms.ToolStripMenuItem ZoomToLayer;
+		private System.Windows.Forms.ToolStripMenuItem RemoveLayer;
     }
 }
 

@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
+using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using ESRI.ArcGIS.Analyst3D;
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.Controls;
+using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.GlobeCore;
 using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.SystemUI;
+using Point = System.Drawing.Point;
 
 namespace GlobeVisualization
 {
@@ -44,6 +46,7 @@ namespace GlobeVisualization
 			}
 			//cast the GlobeViewUtil from the GlobeCamera
 			_mGlobeViewUtil = _mGlobeControl.GlobeCamera as IGlobeViewUtil;
+			MouseWheel += axGlobeControl1_OnMouseWheel;
 		}
 
 		#region Main Menu event handlers
@@ -63,11 +66,7 @@ namespace GlobeVisualization
 		#endregion
 
 		#region globecontrol event handlers
-		/// <summary>
-		/// Mouse move event handler
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
+
 		private void axGlobeControl1_OnMouseMove( object sender, IGlobeControlEvents_OnMouseMoveEvent e )
 		{
 			double dLon, dLat, dAlt;
@@ -84,6 +83,61 @@ namespace GlobeVisualization
 			//report the mouse geographic coordinate onto the statusbar
 			statusBarXY.Text = string.Format( "{0} {1} {2}", dLon.ToString( "###.###" ), dLat.ToString( "###.###" ), dAlt.ToString( "###.###" ) );
 		}
+
+		private void axGlobeControl1_OnMouseWheel( object sender, MouseEventArgs e )
+		{
+			//获取(或设置)axGlobeControl1控件的左上角相对于其容器的左上角的坐标
+			Point controlLocation = axGlobeControl1.PointToScreen( axGlobeControl1.Location );
+			//获取鼠标的坐标
+			Point mouseLocation = PointToScreen( e.Location );
+			//如果当前鼠标位置不在axGlobeControl1控件内，返回
+			if (mouseLocation.X < controlLocation.X ||
+				mouseLocation.X > controlLocation.X + axGlobeControl1.Width ||
+				mouseLocation.Y < controlLocation.Y ||
+				mouseLocation.Y > controlLocation.Y + axGlobeControl1.Height)
+			{
+				return;
+			}
+
+			//定义缩放倍率
+			double scale = 0.2;
+			//判断鼠标轮已转动的制动器数的正负，反转则缩小。
+			if (e.Delta < 0) scale = -scale;
+			//或控件相机
+			IGlobeCamera pGlobeCamera = axGlobeControl1.GlobeCamera;
+			ICamera pCamera = pGlobeCamera as ICamera;
+			if (pCamera == null) return;
+
+			//获取视图
+			IGlobeDisplay pGlobeDisplay = axGlobeControl1.GlobeDisplay;
+			if (pGlobeDisplay == null) return;
+
+			//如果相机的方向指向globe的北方,全球模式
+			if (pGlobeCamera.OrientationMode == esriGlobeCameraOrientationMode.esriGlobeCameraOrientationGlobal)
+			{
+				double zt, xo, yo, zo;
+				//获取表示为十进制纬度和经度，以及公里为单位的高程，的观察者位置。
+				pGlobeCamera.GetObserverLatLonAlt( out xo, out yo, out zo );
+				//获取给定的地理位置某个点的地面高程,注意经纬度与上个函数相反
+				pGlobeDisplay.GetSurfaceElevation( yo, xo, true, out zt );
+				//新建观察点
+				IPoint pObserver = new PointClass();
+				//用既有位置设置观察点坐标
+				pObserver.PutCoords( xo, yo );
+				//升降观查点高程
+				zo = ( zo - zt ) * ( 1 + scale );
+				//设置观察点位置，经纬度为十进制度，高程以公里为单位
+				pGlobeCamera.SetObserverLatLonAlt( xo, yo, zo );
+			}
+			else
+			{
+				//缩放观测距离
+				pCamera.ViewingDistance += pCamera.ViewingDistance * scale;
+			}
+			//刷新视图
+			axGlobeControl1.GlobeDisplay.RefreshViewers();
+		}
+
 		#endregion
 
 		#region toccontrol events handlers
@@ -178,8 +232,10 @@ namespace GlobeVisualization
 		/// <param name="e"></param>
 		private void Property_Click( object sender, EventArgs e )
 		{
-			PropertyBase property = new PropertyBase( axGlobeControl1.Globe );
-			property.Show();
+			//PropertyBase property = new PropertyBase( axGlobeControl1.Globe );
+			//property.Show();
+			DemSetting demSetting=new DemSetting(this);
+			demSetting.Show();
 		}
 
 		/// <summary>
@@ -204,6 +260,11 @@ namespace GlobeVisualization
 				}
 			}
 			return -1;
+		}
+
+		private void RemoveLayer_Click( object sender, EventArgs e )
+		{
+			axGlobeControl1.GlobeDisplay.Scene.DeleteLayer( _tocSelectedLayer );
 		}
 
 		#endregion
