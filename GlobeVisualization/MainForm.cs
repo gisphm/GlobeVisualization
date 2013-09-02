@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Globalization;
-using System.Text;
+using System.Diagnostics;
 using System.Windows.Forms;
 using ESRI.ArcGIS.Analyst3D;
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.Controls;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.GlobeCore;
-using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.SystemUI;
 using Point = System.Drawing.Point;
 
@@ -70,17 +65,18 @@ namespace GlobeVisualization
 		private void axGlobeControl1_OnMouseMove( object sender, IGlobeControlEvents_OnMouseMoveEvent e )
 		{
 			double dLon, dLat, dAlt;
+
 			//convert the window coordinate into geographic coordinates
 			_mGlobeViewUtil.WindowToGeographic( _mGlobeControl.GlobeDisplay,
-											   _mGlobeControl.GlobeDisplay.ActiveViewer,
-											   e.x,
-											   e.y,
-											   true,
-											   out dLon,
-											   out dLat,
-											   out dAlt );
+										   _mGlobeControl.GlobeDisplay.ActiveViewer,
+										   e.x,
+										   e.y,
+										   true,
+										   out dLon,
+										   out dLat,
+										   out dAlt );
 
-			//report the mouse geographic coordinate onto the statusbar
+			//report the mouse geographic coordinate onto the status bar
 			statusBarXY.Text = string.Format( "{0} {1} {2}", dLon.ToString( "###.###" ), dLat.ToString( "###.###" ), dAlt.ToString( "###.###" ) );
 		}
 
@@ -234,7 +230,7 @@ namespace GlobeVisualization
 		{
 			//PropertyBase property = new PropertyBase( axGlobeControl1.Globe );
 			//property.Show();
-			DemSetting demSetting=new DemSetting(this);
+			DemSetting demSetting = new DemSetting( this );
 			demSetting.Show();
 		}
 
@@ -268,5 +264,34 @@ namespace GlobeVisualization
 		}
 
 		#endregion
+
+		public void ChangeElevationHeight( string elevation )
+		{
+			ILayer layer = _tocSelectedLayer;
+			IGlobeDisplayLayers layers = axGlobeControl1.GlobeDisplay as IGlobeDisplayLayers;
+			if (layers == null) return;
+			IGlobeLayerProperties layerProperties = layers.FindGlobeProperties( layer );
+			layerProperties.Type = esriGlobeDataType.esriGlobeDataElevation;
+			IGlobeHeightProperties heightProperties = layerProperties.HeightProperties;
+			heightProperties.ZFactor = Convert.ToDouble( elevation );
+			layers.RefreshLayer( _tocSelectedLayer );
+			axGlobeControl1.GlobeDisplay.RefreshViewers();
+		}
+
+		public double GetElevationHeight( )
+		{
+			IGlobeDisplayLayers layers = axGlobeControl1.GlobeDisplay as IGlobeDisplayLayers;
+			if (layers != null)
+			{
+				IGlobeLayerProperties layerProperties = layers.FindGlobeProperties(_tocSelectedLayer);
+				if (layerProperties != null)
+				{
+					layerProperties.Type = esriGlobeDataType.esriGlobeDataElevation;
+					IGlobeHeightProperties heightProperties = layerProperties.HeightProperties;
+					return heightProperties.ZFactor;
+				}
+			}
+			return -1;
+		}
 	}
 }

@@ -1,24 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GlobeVisualization
 {
 	public partial class DemSetting : Form
 	{
-		private MainForm _dMainForm;
+		private readonly MainForm _dMainForm;
 		public DemSetting( MainForm mainForm )
 		{
 			InitializeComponent();
 			if (mainForm == null || tboxFactor == null) return;
 			_dMainForm = mainForm;
-			tboxFactor.Text = "0.000";
+			double height = _dMainForm.GetElevationHeight();
+			if (height < 0)
+			{
+				MessageBox.Show("系统或程序出错！");
+				return;
+			}
+			tboxFactor.Text = height.ToString();
 		}
 
 		private void btnClose_Click( object sender, EventArgs e )
@@ -29,6 +28,7 @@ namespace GlobeVisualization
 		private void btnOk_Click( object sender, EventArgs e )
 		{
 			if (tboxFactor == null) return;
+			_dMainForm.ChangeElevationHeight(tboxFactor.Text);
 			Close();
 		}
 
@@ -38,7 +38,7 @@ namespace GlobeVisualization
 			bool isDot = DotInString( tboxFactor.Text );
 			if (isDot)
 			{
-				if (e.KeyChar < 48 || e.KeyChar > 57 || e.KeyChar != 8 || e.KeyChar != 13)
+				if (!char.IsDigit(e.KeyChar) && e.KeyChar != 8 && e.KeyChar != 13)
 				{
 					MessageBox.Show( "只能输入数字0~9！", "信息",
 						MessageBoxButtons.OK, MessageBoxIcon.Information );
@@ -47,7 +47,7 @@ namespace GlobeVisualization
 			}
 			else
 			{
-				if (e.KeyChar < 48 || e.KeyChar > 57 || e.KeyChar != 8 || e.KeyChar != 13 || e.KeyChar != 46)
+				if (!char.IsDigit(e.KeyChar) && e.KeyChar != 8 && e.KeyChar != 13 && e.KeyChar != 46)
 				{
 					MessageBox.Show( "只能输入 . 或数字 0~9！", "信息",
 						MessageBoxButtons.OK, MessageBoxIcon.Information );
